@@ -235,7 +235,7 @@ def load_split_data_with_node_attrs(path="datas/Graph-Twitter/", dataset="Graph-
 
     node_features = normalize(node_features)
     adj = normalize(adj + sp.eye(adj.shape[0]))  # 对应公式A~=A+IN
-    adj = adj.todense()
+    adj = adj.tocsr()
 
     print('Creating entries...')
     for n in range(1, length + 1):
@@ -248,7 +248,7 @@ def load_split_data_with_node_attrs(path="datas/Graph-Twitter/", dataset="Graph-
 
         # entry为第n个图的邻接矩阵A
         entry = np.zeros((max_num_nodes, max_num_nodes))
-        entry[:idx_map[n] - prev, :idx_map[n] - prev] = adj[prev:idx_map[n], prev:idx_map[n]]
+        entry[:idx_map[n] - prev, :idx_map[n] - prev] = adj[prev:idx_map[n]].todense()[:, prev:idx_map[n]]
         entry = torch.FloatTensor(entry)
         adj_list.append(entry.tolist())
 
