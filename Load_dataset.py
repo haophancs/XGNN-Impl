@@ -147,7 +147,7 @@ def load_split_data_with_node_labels(path="datas/MUTAG/", dataset="MUTAG", split
 
     node_features = normalize(node_features)
     adj = normalize(adj + sp.eye(adj.shape[0]))  # 对应公式A~=A+IN
-    adj = adj.todense()
+    adj = adj.tocsr()
 
     for n in range(1, length + 1):
         # entry为第n个图的特征矩阵X
@@ -158,7 +158,7 @@ def load_split_data_with_node_labels(path="datas/MUTAG/", dataset="MUTAG", split
 
         # entry为第n个图的邻接矩阵A
         entry = np.zeros((max_num_nodes, max_num_nodes))
-        entry[:idx_map[n] - prev, :idx_map[n] - prev] = adj[prev:idx_map[n], prev:idx_map[n]]
+        entry[:idx_map[n] - prev, :idx_map[n] - prev] = adj[prev:idx_map[n]].todense()[prev:idx_map[n]]
         entry = torch.FloatTensor(entry)
         adj_list.append(entry.tolist())
 
@@ -237,9 +237,10 @@ def load_split_data_with_node_attrs(path="datas/Graph-Twitter/", dataset="Graph-
     adj = normalize(adj + sp.eye(adj.shape[0]))  # 对应公式A~=A+IN
     adj = adj.todense()
 
-    print('Creating entry...')
+    print('Creating entries...')
     for n in range(1, length + 1):
         # entry为第n个图的特征矩阵X
+        print(n, '/', length)
         entry = np.zeros((max_num_nodes, node_features.shape[1]))
         entry[:idx_map[n] - prev] = node_features[prev:idx_map[n]]
         entry = torch.FloatTensor(entry)
@@ -253,6 +254,7 @@ def load_split_data_with_node_attrs(path="datas/Graph-Twitter/", dataset="Graph-
 
         prev = idx_map[n]  # prev为下个图起始结点的索引号
 
+    print('All entries loaded!')
     num_total = max(graph_idx)
     num_train = int(split_train * num_total)
     num_val = int((split_train + split_val) * num_total)
@@ -273,4 +275,5 @@ def load_split_data_with_node_attrs(path="datas/Graph-Twitter/", dataset="Graph-
 
     # 返回值一次为 188个图的邻接矩阵列表  188个图的特征矩阵列表  188个图的label， 每个图的起始结点索引号， 训练集索引号，
     # 验证集索引号， 测试集索引号
+    print('Dataset loaded!')
     return adj_list, features_list, graph_labels, idx_map, idx_train, idx_val, idx_test
