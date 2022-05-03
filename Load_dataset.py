@@ -223,7 +223,7 @@ def load_split_data_with_node_attrs(path="datas/Graph-Twitter/", dataset="Graph-
     edges_unordered = np.genfromtxt("{}{}A.txt".format(path, dataset), delimiter=",",
                                     dtype=np.int32)
     # 边的标签
-    edges_label = np.ones((edges_unordered.shape[0],))
+    edges_label = np.ones((edges_unordered.shape[0],), dtype=np.float32)
 
     # 生成邻接矩阵A，该邻接矩阵包括了数据集中所有的边
     M = node_features.shape[0]
@@ -234,20 +234,20 @@ def load_split_data_with_node_attrs(path="datas/Graph-Twitter/", dataset="Graph-
     adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
 
     node_features = normalize(node_features)
-    adj = normalize(adj + sp.eye(adj.shape[0]))  # 对应公式A~=A+IN
+    adj = normalize(adj + sp.eye(adj.shape[0], dtype=np.float32))  # 对应公式A~=A+IN
     adj = adj.tocsr()
 
     print('Creating entries...')
     for n in range(1, length + 1):
         # entry为第n个图的特征矩阵X
         print(n, '/', length)
-        entry = np.zeros((max_num_nodes, node_features.shape[1]))
+        entry = np.zeros((max_num_nodes, node_features.shape[1]), dtype=np.float32)
         entry[:idx_map[n] - prev] = node_features[prev:idx_map[n]]
         entry = torch.FloatTensor(entry)
         features_list.append(entry.tolist())
 
         # entry为第n个图的邻接矩阵A
-        entry = np.zeros((max_num_nodes, max_num_nodes))
+        entry = np.zeros((max_num_nodes, max_num_nodes), dtype=np.float32)
         entry[:idx_map[n] - prev, :idx_map[n] - prev] = adj[prev:idx_map[n]].todense()[:, prev:idx_map[n]]
         entry = torch.FloatTensor(entry)
         adj_list.append(entry.tolist())
